@@ -1,15 +1,24 @@
 use std::fs;
 use std::str;
 
-const CASE_DIFFERENCE: i16 = 97 - 65; // constant difference between lowercase and uppercase letters in ASCII
+const CASE_DIFFERENCE: u8 = b'a' - b'A'; // constant difference between lowercase and uppercase letters in ASCII
+
+fn reacts(c1: u8, c2: u8) -> bool {
+    if c1 > c2 {
+        c1 - c2 == CASE_DIFFERENCE
+    } else {
+        c2 - c1 == CASE_DIFFERENCE
+    }
+}
 
 fn part1(input: &str) -> String {
     let mut bytes: Vec<u8> = input.as_bytes().to_vec();
     let mut i = 0;
     // the below use of mutable vector is ultimately O(N^2) in worst case because each remove is O(N).
     // it's probably possible to do this in O(N) with 3 or 4 pointers, but it's making my brain hurt to think of it.
+    // (after note: turns out it's easier to think in stack push/pop semantics as done here: https://www.forrestthewoods.com/blog/learning-rust-via-advent-of-code/adventofcode2018_forrestsmith_rust)
     while !bytes.is_empty() && i < bytes.len() - 1 {
-        if (bytes[i] as i16 - bytes[i + 1] as i16).abs() == CASE_DIFFERENCE {
+        if reacts(bytes[i], bytes[i + 1]) {
             // quick way to check if two letters are lowercase/uppercase versions of each other
             bytes.remove(i);
             bytes.remove(i); // i+1 is now i
@@ -20,7 +29,8 @@ fn part1(input: &str) -> String {
             i += 1;
         }
     }
-    str::from_utf8(&bytes).unwrap().to_string()
+    // result is still valid ASCII, so we unwrap() result
+    String::from_utf8(bytes).unwrap()
 }
 
 fn part2(input: &str) -> usize {
